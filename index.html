@@ -2,23 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Waves</title>
 </head>
 <body>
+<h1>Waves</h1>
 <div>
+  <h2>
+    sin
+  </h2>
   <canvas id="sin" width="200" height="100">
   </canvas>
 </div>
 <div>
+  <h2>
+    triangle
+  </h2>
   <canvas id="triangle" width="200" height="100">
   </canvas>
 </div>
 <div>
+  <h2>
+    saw
+  </h2>
   <canvas id="saw" width="200" height="100">
   </canvas>
 </div>
 
 <div>
+  <h2>
+    square
+  </h2>
   <canvas id="square" width="200" height="100">
   </canvas>
 </div>
@@ -60,11 +73,27 @@
     const canvasHeight = 100;
     const canvasVerticalMargin = 10;
     const resolution = 100;
+    const tickSize = 10;
 
     ctx.strokeStyle = 'rgba(0,0,0,0.5)'
     ctx.beginPath();
     ctx.moveTo(0, canvasHeight / 2)
     ctx.lineTo(canvasWidth, canvasHeight / 2);
+    ctx.stroke();
+
+    ctx.beginPath()
+    ctx.moveTo(canvasWidth/2, canvasHeight /2 - tickSize/2);
+    ctx.lineTo(canvasWidth/2, canvasHeight /2 + tickSize/2);
+    ctx.stroke();
+
+    ctx.beginPath()
+    ctx.moveTo(0, canvasHeight /2 - tickSize/2);
+    ctx.lineTo(0, canvasHeight /2 + tickSize/2);
+    ctx.stroke();
+
+    ctx.beginPath()
+    ctx.moveTo(canvasWidth, canvasHeight /2 - tickSize/2);
+    ctx.lineTo(canvasWidth, canvasHeight /2 + tickSize/2);
     ctx.stroke();
 
     ctx.strokeStyle = 'rgba(0,0,0,1)'
@@ -73,11 +102,13 @@
     for (let i = 0; i <= resolution; i++) {
       const t = i / resolution;
       const value = wave(1, 0, t);
-      if (i === 0) {
-        ctx.moveTo(t * canvasWidth, (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin)
-      } else {
-        ctx.lineTo(t * canvasWidth, (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin)
+      const x = t * canvasWidth;
+      const y = (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin;
 
+      if (i === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.lineTo(x, y)
       }
     }
 
