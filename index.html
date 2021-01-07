@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div>
+  <canvas id="sin" width="200" height="100">
+  </canvas>
+</div>
+<div>
+  <canvas id="triangle" width="200" height="100">
+  </canvas>
+</div>
+<div>
+  <canvas id="saw" width="200" height="100">
+  </canvas>
+</div>
+
+<div>
+  <canvas id="square" width="200" height="100">
+  </canvas>
+</div>
+<script>
+  // https://github.com/netcell/FTrig
+  const sinLow = x => {
+    x = x % (2 * 3.14159265) - 3.14159265;
+    if (x < -3.14159265) x += 6.28318531;
+    else if (x > 3.14159265) x -= 6.28318531;
+    if (x < 0) return 1.27323954 * x + .405284735 * x * x;
+    else return 1.27323954 * x - 0.405284735 * x * x;
+  };
+
+  const saw = (f, phi, t) => {
+    return Math.abs(t * 2 * f + phi) % 2 - 1
+  };
+
+  const pulse = (width) => (f, phi, t) => {
+    const cutoff = 1 - 2 * width;
+    return saw(f, phi, t) > cutoff ? 1 : -1;
+  };
+
+  const square = pulse(0.5);
+
+  const sin = (f, phi, t) => {
+    return sinLow(2 * Math.PI * f * t + 2 * Math.PI * phi)
+  };
+
+  const triangle = (f, phi, t) => {
+    return 2 * Math.abs(saw(f, phi + 0.5, t)) - 1
+  };
+
+  // --- draw wave ---
+
+  const drawWave = (wave, canvas) => {
+    const ctx = canvas.getContext('2d');
+
+    const canvasWidth = 200;
+    const canvasHeight = 100;
+    const canvasVerticalMargin = 10;
+    const resolution = 100;
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)'
+    ctx.beginPath();
+    ctx.moveTo(0, canvasHeight / 2)
+    ctx.lineTo(canvasWidth, canvasHeight / 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(0,0,0,1)'
+    ctx.beginPath();
+
+    for (let i = 0; i <= resolution; i++) {
+      const t = i / resolution;
+      const value = wave(1, 0, t);
+      if (i === 0) {
+        ctx.moveTo(t * canvasWidth, (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin)
+      } else {
+        ctx.lineTo(t * canvasWidth, (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin)
+
+      }
+    }
+
+    ctx.stroke()
+  }
+
+  drawWave(sin, document.getElementById('sin'))
+  drawWave(triangle, document.getElementById('triangle'))
+  drawWave(saw, document.getElementById('saw'))
+  drawWave(square, document.getElementById('square'))
+</script>
+</body>
+</html>
