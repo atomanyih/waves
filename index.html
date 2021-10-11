@@ -6,35 +6,14 @@
 </head>
 <body>
 <h1>Waves</h1>
-<div>
-  <h2>
-    sin
-  </h2>
-  <canvas id="sin" width="200" height="100">
-  </canvas>
-</div>
-<div>
-  <h2>
-    triangle
-  </h2>
-  <canvas id="triangle" width="200" height="100">
-  </canvas>
-</div>
-<div>
-  <h2>
-    saw
-  </h2>
-  <canvas id="saw" width="200" height="100">
-  </canvas>
-</div>
-
-<div>
-  <h2>
-    square
-  </h2>
-  <canvas id="square" width="200" height="100">
-  </canvas>
-</div>
+<label>
+  f
+  <input type="range" id="fInput" min="1" max="5" />
+</label>
+<label>
+  phi
+  <input type="range" id="phiInput" min="0" max="100" step="25" />
+</label>
 <script>
   // https://github.com/netcell/FTrig
   const sinLow = x => {
@@ -46,7 +25,7 @@
   };
 
   const saw = (f, phi, t) => {
-    return Math.abs(t * 2 * f + phi) % 2 - 1
+    return Math.abs(t * 2 * f + phi * 2) % 2 - 1
   };
 
   const pulse = (width) => (f, phi, t) => {
@@ -61,12 +40,42 @@
   };
 
   const triangle = (f, phi, t) => {
-    return 2 * Math.abs(saw(f, phi + 0.5, t)) - 1
+    return 2 * Math.abs(saw(f, phi + 0.25, t)) - 1
   };
+
+
+  const clamp = (x, lowerlimit, upperlimit) => {
+    if (x < lowerlimit)
+      return lowerlimit;
+    if (x > upperlimit)
+      return upperlimit;
+
+    return x
+  }
+
+  const smoothstep = (edge0, edge1, x) => {
+    // Scale, bias and saturate x to 0..1 range
+    const val = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    // Evaluate polynomial
+    return val * val * (3 - 2 * val);
+  }
+
+
+  const smoothsquare = (f, phi, t) => {
+    const tLoop = (t * f + phi + 0.25) % 1;
+    return (smoothstep(0.15, 0.35, tLoop) * (1 - smoothstep(0.65, 0.85, tLoop))) * -2 + 1
+  }
 
   // --- draw wave ---
 
-  const drawWave = (wave, canvas) => {
+  const drawWave = (wave, f, phi) => {
+    const div = document.createElement('div');
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 100;
+    document.body.appendChild(div);
+    div.appendChild(canvas);
+
     const ctx = canvas.getContext('2d');
 
     const canvasWidth = 200;
@@ -82,18 +91,18 @@
     ctx.stroke();
 
     ctx.beginPath()
-    ctx.moveTo(canvasWidth/2, canvasHeight /2 - tickSize/2);
-    ctx.lineTo(canvasWidth/2, canvasHeight /2 + tickSize/2);
+    ctx.moveTo(canvasWidth / 2, canvasHeight / 2 - tickSize / 2);
+    ctx.lineTo(canvasWidth / 2, canvasHeight / 2 + tickSize / 2);
     ctx.stroke();
 
     ctx.beginPath()
-    ctx.moveTo(0, canvasHeight /2 - tickSize/2);
-    ctx.lineTo(0, canvasHeight /2 + tickSize/2);
+    ctx.moveTo(0, canvasHeight / 2 - tickSize / 2);
+    ctx.lineTo(0, canvasHeight / 2 + tickSize / 2);
     ctx.stroke();
 
     ctx.beginPath()
-    ctx.moveTo(canvasWidth, canvasHeight /2 - tickSize/2);
-    ctx.lineTo(canvasWidth, canvasHeight /2 + tickSize/2);
+    ctx.moveTo(canvasWidth, canvasHeight / 2 - tickSize / 2);
+    ctx.lineTo(canvasWidth, canvasHeight / 2 + tickSize / 2);
     ctx.stroke();
 
     ctx.strokeStyle = 'rgba(0,0,0,1)'
@@ -101,9 +110,9 @@
 
     for (let i = 0; i <= resolution; i++) {
       const t = i / resolution;
-      const value = wave(1, 0, t);
+      const value = wave(f, phi, t);
       const x = t * canvasWidth;
-      const y = (value + 1) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin;
+      const y = (1 - value) / 2 * (canvasHeight - 2 * canvasVerticalMargin) + canvasVerticalMargin;
 
       if (i === 0) {
         ctx.moveTo(x, y)
@@ -115,10 +124,34 @@
     ctx.stroke()
   }
 
-  drawWave(sin, document.getElementById('sin'))
-  drawWave(triangle, document.getElementById('triangle'))
-  drawWave(saw, document.getElementById('saw'))
-  drawWave(square, document.getElementById('square'))
+  function draw(f, phi) {
+    Array.from(document.querySelectorAll('canvas')).map(e => e.remove())
+
+    drawWave(sin, f, phi)
+    drawWave(triangle, f, phi)
+    drawWave(saw, f, phi)
+    drawWave(square, f, phi)
+    drawWave(smoothsquare, f, phi)
+  }
+
+  const f = fInput.value;
+  const phi = phiInput.value / 100;
+
+  draw(f, phi);
+
+  fInput.addEventListener('change', () => {
+    const f = fInput.value;
+    const phi = phiInput.value / 100;
+    draw(f, phi);
+  })
+
+  phiInput.addEventListener('change', () => {
+    const f = fInput.value;
+    const phi = phiInput.value / 100;
+    draw(f, phi);
+  })
+
+
 </script>
 </body>
 </html>
